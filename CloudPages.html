@@ -1,0 +1,354 @@
+<script runat=server>
+
+Platform.Load('Core','1');
+
+var ret = 0;
+var msg = "";
+var postflg = Request.GetFormField('postflg');
+var postdata = Request.GetFormField('postdata1');
+var csv = Request.GetFormField('postdatacsv');
+
+if(postflg == 1){
+  var name = Request.GetFormField("dename");
+  var relcol = Request.GetFormField("relcolumn");
+  var fields = Platform.Function.ParseJSON(postdata);
+  
+  var deObj = {
+    Name : name,
+    CustomerKey : name,
+    Fields : fields
+  };
+  
+  if(relcol != ""){
+    deObj.SendableInfo = {
+      Field : {
+        Name : relcol,
+        FieldType : "Text"
+      },
+      RelatesOn : "Subscriber Key"
+    };
+    deObj.IsTestable = "TRUE";
+  }
+    
+  try{
+    var de = DataExtension.Add(deObj); 
+    msg = 'Success!'
+    ret = 0;
+  } catch(ex) {
+    msg = "ERROR!!!!: " + Platform.Function.Stringify(ex);
+    ret = 1;
+  } 
+  
+}else{
+}
+
+Variable.SetValue("jsonstr", Platform.Function.Stringify(deObj)); 
+Variable.SetValue("result", msg);
+Variable.SetValue("postflg", postflg);
+Variable.SetValue("ret", ret);  
+Variable.SetValue("csv", csv);
+Variable.SetValue("dename", name);
+  
+
+</script>  
+
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="https://sfmc-contentblock.s3.amazonaws.com/contents/handsontable.full.min.css">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.0-beta1/dist/css/bootstrap.min.css" rel="stylesheet">
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.3/jquery.min.js"></script>
+    <script src="https://sfmc-contentblock.s3.amazonaws.com/contents/handsontable.full.min.js"></script>
+
+<style>
+    #wrapper {
+        display: -webkit-box;
+        display: -moz-box;
+        display: box;
+    }
+    #logs {
+        list-style: none;
+        padding: 0;
+        margin: 0;
+        width: 20%;
+    }
+    #logs li {
+        margin: 0;
+        padding: 0 0.5em;
+        font-size: 80%;
+        border-bottom: 1px solid #DDD;
+    }
+    .btn-flat-simple {
+      position: relative;
+      display: inline-block;
+      font-weight: bold;
+      padding: 0.25em 0.5em;
+      text-decoration: none;
+      color: #00BCD4;
+      background: #ECECEC;
+      transition: .4s;
+    }
+
+    .btn-flat-simple:hover {
+      background: #00bcd4;
+      color: white;
+    }
+  
+</style>
+
+</head>
+<body>
+  <div class="container">
+    <div>
+      <h1 class="display-2">CloudPages DE Maker
+        <small class="text-muted">v0.21</small>
+      </h1>
+      
+      <div id="alert" class="alert alert-danger" role="alert">
+        DE定義ERROR!!!
+      </div>
+%%[IF @postflg == 1 THEN]%%      
+ %%[IF @ret == 1 THEN]%%
+      <div id="alert" class="alert alert-danger" role="alert">
+        %%=v(@result)=%%
+      </div>
+ %%[ELSE]%%
+      <div class="alert alert-success" role="alert">
+        %%=v(@result)=%%
+      </div>      
+ %%[ENDIF]%%
+%%[ENDIF]%%      
+      <form id="postform" action="#">
+          <div>
+              <input type="hidden" id="postflg" name="postflg">
+              <input type="hidden" id="postdata1" name="postdata1">
+              <input type="hidden" id="postdatacsv" name="postdatacsv">
+              <input type="hidden" id="relcolumn" name="relcolumn">
+
+              <div class="form-floating mb-3">
+                  <input type="Text" class="form-control" id="dename" name="dename" value="%%=v(@dename)=%%" placeholder="DataExtension Name Here">
+                  <label for="name" class="form-label">DE Name</label>
+              </div>
+              <br>
+            <!--
+              <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="isSend">
+                  <label class="form-check-label" for="isSend">Sendable</label>
+              </div>
+              <div class="mb-3 form-check">
+                  <input type="checkbox" class="form-check-input" id="isTest">
+                  <label class="form-check-label" for="isTest">For TEST</label>
+              </div>
+             -->
+          </div>
+      </form>  
+    </div>
+  
+    <p class="h4">
+      DE Fields
+    </p>
+    <div>
+        <div id="grid"></div>
+    </div>
+    <div>
+        <ol id="logs"></ol>
+    </div>
+%%[IF @postflg == 1 THEN]%%
+    <div>
+      <a href="[URL for this CloudPages]" class="btn btn-outline-primary m-5 btn-lg" id="btnRetry">  ReTry!!  </a>
+    </div>
+    <div>
+      <h1 class="display-6">--- DE OBJ JSON ---</h1>
+      <p>%%=v(@jsonstr)=%%</p>
+    </div>
+%%[ELSE]%%
+  
+    <div>
+      <a href="#" class="btn btn-primary m-5 btn-lg" id="btnSubmit">  Make Data Extension!!  </a>
+      <a href="[URL for this CloudPages]" class="btn btn-outline-dark m-5 btn-lg" id="btnRetry">  ReTry!!  </a>
+    </div>
+%%[ENDIF]%%
+ </div>
+<script>
+$(function () {
+    $("#alert").hide();
+
+    var getData = function () {
+%%[IF @postflg == 1 THEN]%%
+        return %%=v(@csv)=%%;
+%%[ELSE]%%
+        return [
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false],
+            ["", "", "", false, false, "", false]
+        ];
+%%[ENDIF]%%
+    };
+
+    var logs = $('#logs')
+    gridContainer = document.getElementById('grid'),
+        selectedRow = 0,
+        selectedCol = 0,
+        log = function (text) {
+            // $('<li>').text(text).prependTo(logs);
+        }
+    gridTable = new Handsontable(gridContainer, {
+        data: getData(),
+        width: function () {
+            return 1300;
+        },
+        height: 500,
+        colWidths: [300, 200, 200, 100, 100, 200, 100],
+        /*            colWidths: function (index) {
+                            },
+                */
+        minSpareRows: 1,
+        colHeaders: ['Field Name', 'Type', 'Length', 'PrimaryKey', 'Required', 'InitialValue', 'Relationship'],
+        columns: [
+            { "readOnly": false, "type": "text" },
+            {
+                "readOnly": false,
+                type: 'autocomplete',
+                source: ['Text', 'Number', 'Date', 'EmailAddress', 'Boolean', 'Decimal'],
+                strict: true,
+                allowInvalid: false
+            },
+            { "readOnly": false, "type": "text", validator: /^[0-9,]*$/ },
+            {
+                "readOnly": false,
+                "type": "checkbox",
+                source: [false, true],
+                strict: true,
+                allowInvalid: false
+            },
+            {
+                "readOnly": false,
+                "type": "checkbox",
+                source: [false, true],
+                strict: true,
+                allowInvalid: false
+            },
+            { "readOnly": false },
+            { "type": "checkbox" }
+        ],
+        autoColumnSize: true,
+        rowHeaders: true,
+        contextMenu: true,
+        cells: function (row, col, prop) {
+            var cellProperties = {}
+            return cellProperties;
+        },
+        afterChange: function (changes, source) {
+        },
+        afterSelection: function (r, c, r2, c2) {
+        }
+    });
+
+    // Submit
+    $(document).on('click', '#btnSubmit', function (e) {
+
+        var fields = gridTable.getData();
+        var fieldsarry = [];
+        var col = "";
+        console.log(fields);
+
+        for (let i = 0; i < fields.length; i++) {
+
+
+            var field = {
+                Name: "",
+                FieldType: "",
+                IsPrimaryKey: "",
+                IsRequired: ""
+            };
+
+            field.Name = fields[i][0];
+            field.FieldType = fields[i][1];
+            field.IsPrimaryKey = fields[i][3] || false;
+            field.IsRequired = fields[i][4] || false;
+
+            if (field.IsPrimaryKey == "TRUE"){
+              field.IsRequired = true;
+            }
+            if (field.Name == "") {
+                break;
+            }
+
+            if (col == "" && fields[i][6] == true) {
+                col = field.Name;
+            }
+
+            if (fields[i][5].length > 0) {
+                field.DefaultValue = fields[i][5];
+            }
+
+            var isError = 0;
+            switch (field.FieldType) {
+                case "Number":
+                    break;
+                case "Decimal":
+                    var dec = fields[i][2].split(",");;
+                    field.Precision = dec[0];
+                    field.Scale = dec[1];
+                    break;
+                case "Text":
+                    field.MaxLength = fields[i][2];
+                    break;
+                case "Boolean":
+                    break;
+                case "Date":
+                    field.Ordinal = 2;
+                    break;
+                case "EmailAddress":
+                    break;
+                default:
+                    isError = 1;
+                    break;
+            }
+            fieldsarry.push(field);
+
+            if (isError == 1) {
+                $("alert").show();
+                return false;
+            }
+        }
+
+        $('#postdata1').val(JSON.stringify(fieldsarry));
+        $('#postdatacsv').val(JSON.stringify(fields));
+        $('#postflg').val(1);
+        $('#relcolumn').val(col);
+
+        var target = document.getElementById("postform");
+        //target.action = location.origin;
+        target.method = "post";
+        target.submit();
+
+    });
+});
+</script>
+
+</body>
+</html>
