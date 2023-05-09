@@ -1,1 +1,1 @@
-# CloudPages-DE-Makger
+# CloudPages-DE-Maker
