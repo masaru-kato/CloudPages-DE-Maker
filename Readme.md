@@ -1,7 +1,7 @@
 # DataExtension Maker in CloudPages
 
 Salesforce Marketing CloudのData Extensionをエクセルから貼り付けで作成可能なツール
-エクセスなどの定義書を貼り付けてサクッとDE作成できます。
+Excelなどの定義書を貼り付けてサクッとDE作成できます。
 HTMLは、CloudPagesとして実装する必要があります。
 
 SSOを利用する場合は、インストールパッケージを作成の上、以下を設定。
