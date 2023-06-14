@@ -8,19 +8,12 @@ SSOを利用する場合は、インストールパッケージを作成の上�
 ※SSO不要の場合は、nologin=1
 
 //Intalled Package Etc  ----------------------------------
-
 var baseurl = "https://TSE.auth.marketingcloudapis.com/";
-
 var redirecturl = "[REDIRECT URL]";
-
 var tse = "[END POINT]"; /* End Point */
-
 var cid = "[CLIENT ID]"; /* client ID */
-
 var csecret = "[CLIENT SECRET]"; /* client secret */
-
 var nologin = 0; // 1: ログイン不要
-
 //----------------------------------------------------------
 
 イメージ
