@@ -9,7 +9,7 @@
     var tse = "[END POINT]"; /* End Point */
     var cid = "[CLIENT ID]"; /* client ID */
     var csecret = "[CLIENT SECRET]"; /* client secret */
-    var nologin = 0; // 1: ログイン不要
+    var nologin = 1; // 1: ログイン不要／　0:ログイン必要
     //----------------------------------------------------------
 
     //Check Login Start
@@ -58,6 +58,7 @@
     var postflg = Request.GetFormField('postflg');
     var postdata = Request.GetFormField('postdata1');
     var csv = Request.GetFormField('postdatacsv');
+    var mid = Platform.Recipient.GetAttributeValue('memberid');
 
     if (postflg == 1) {
         var name = Request.GetFormField("dename");
@@ -108,6 +109,7 @@
     Variable.SetValue("csv", csv);
     Variable.SetValue("dename", name);
     Variable.SetValue("category", cate);
+    Variable.SetValue("mid", mid);
     //End
 
     //Category
@@ -184,6 +186,8 @@
             </h1>
             <ul class="nav col-12 col-lg-auto me-lg-auto mb-2 justify-content-center mb-md-0 mx-3">
             </ul>
+            <span class="navbar-text text-white">MID:%%=v(@mid)=%%</span>
+            <div class="mx-3"></div>
         </div>
     </header>
     <div class="container">
@@ -260,7 +264,7 @@
         </div>  
         %%[IF @postflg == 1 THEN]%%
         <div>
-            <a href="" class="btn btn-secondary m-3 btn-lg" id="btnRetry">Reset</a>
+            <a href="" class="btn btn-outline-dark m-3 btn-lg" id="btnRetry">Reset</a>
         </div>
         %%[ELSE]%%
         <div>
